@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Pizzeria – Material 3 Dark (Completo)</title>
+
+<!-- Google Fonts + Material Icons + Chart.js -->
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Material+Symbols+Outlined" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+:root{
+  --md-sys-color-primary:#ff9800;
+  --md-sys-color-on-primary:#1b1b1b;
+  --md-sys-color-surface:#121212;
+  --md-sys-color-surface-variant:#1e1e1e;
+  --md-sys-color-outline:#2c2c2c;
+  --md-sys-color-on-surface:#e2e2e2;
+  --md-sys-color-on-surface-variant:#b0b0b0;
+  --radius:16px;
+  font-family:'Roboto',sans-serif;
+}
+*{box-sizing:border-box;}
+body{margin:0;background:var(--md-sys-color-surface);color:var(--md-sys-color-on-surface);}
+a{color:var(--md-sys-color-primary);text-decoration:none;}
+
+/* App Bar */
+.app-bar{
+  background:var(--md-sys-color-surface-variant);
+  color:var(--md-sys-color-on-surface);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:12px 20px;position:sticky;top:0;z-index:10;
+}
+.app-bar h1{margin:0;font-size:20px;font-weight:500;}
+.icon-btn{background:none;border:none;color:inherit;
+  font-family:'Material Symbols Outlined';font-size:28px;cursor:pointer;}
+
+/* Drawer */
+.drawer{
+  position:fixed;top:0;left:-260px;width:240px;height:100%;
+  background:var(--md-sys-color-surface-variant);
+  box-shadow:2px 0 12px rgba(0,0,0,.6);
+  transition:left .25s ease;padding-top:64px;z-index:20;
+}
+.drawer.open{left:0;}
+.drawer a{
+  display:block;padding:14px 20px;
+  color:var(--md-sys-color-on-surface);text-decoration:none;
+  border-bottom:1px solid var(--md-sys-color-outline);
+}
+.drawer a:hover{background:rgba(255,255,255,0.05);}
+
+/* Layout */
+main{padding:20px;max-width:980px;margin:auto;padding-bottom:120px;}
+.card{
+  background:var(--md-sys-color-surface-variant);
+  border-radius:var(--radius);padding:20px;margin:16px 0;
+  box-shadow:0 4px 16px rgba(0,0,0,.4);
+}
+.card h2{margin:0 0 12px;color:var(--md-sys-color-primary);font-weight:500;}
+.money{font-weight:700;font-size:20px;}
+.muted{font-size:14px;color:var(--md-sys-color-on-surface-variant);}
+
+/* KPI */
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;}
+.kpi{background:var(--md-sys-color-surface);border-radius:var(--radius);padding:16px;text-align:center;}
+.kpi h3{margin:0 0 8px;font-weight:500;color:var(--md-sys-color-on-surface-variant);}
+.ok{color:#4ade80;}
+.bad{color:#ef4444;}
+
+/* Quick actions */
+.quick-actions{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));
+  gap:16px;text-align:center;
+}
+.quick-actions a{
+  background:var(--md-sys-color-surface);
+  border:1px solid var(--md-sys-color-outline);
+  border-radius:var(--radius);padding:18px;
+  color:var(--md-sys-color-on-surface);
+  text-decoration:none;display:flex;flex-direction:column;align-items:center;
+  transition:transform .2s,background .2s;
+}
+.quick-actions a:hover{transform:translateY(-2px);background:rgba(255,255,255,0.05);}
+.quick-actions span{font-family:'Material Symbols Outlined';font-size:32px;margin-bottom:6px;}
+
+/* Forms */
+input,select,button{
+  width:100%;padding:12px 14px;margin-top:8px;
+  border:1px solid var(--md-sys-color-outline);border-radius:var(--radius);
+  background:var(--md-sys-color-surface);color:var(--md-sys-color-on-surface);font-size:16px;
+}
+button{background:var(--md-sys-color-primary);color:var(--md-sys-color-on-primary);font-weight:500;cursor:pointer;}
+button:hover{background:#ffa733;}
+
+/* Table */
+table{width:100%;border-collapse:collapse;font-size:14px;}
+th,td{padding:10px;border-bottom:1px solid var(--md-sys-color-outline);}
+th{color:var(--md-sys-color-primary);font-weight:500;text-align:left;}
+
+/* Bottom nav */
+.bottom-nav{
+  position:fixed;bottom:0;left:0;width:100%;
+  background:var(--md-sys-color-surface-variant);
+  display:flex;justify-content:space-around;
+  padding:10px 0 env(safe-area-inset-bottom);
+  box-shadow:0 -2px 12px rgba(0,0,0,.5);
+}
+.bottom-nav a{
+  text-decoration:none;color:var(--md-sys-color-on-surface-variant);
+  font-size:12px;text-align:center;flex:1;
+}
+.bottom-nav a.active,.bottom-nav a:hover{color:var(--md-sys-color-primary);}
+.bottom-nav .material-symbols-outlined{display:block;font-size:24px;}
+</style>
+</head>
+<body>
+
+<header class="app-bar">
+  <button class="icon-btn" id="btnMenu">menu</button>
+  <h1>Dashboard Pizzeria</h1>
+  <span></span>
+</header>
+
+<nav id="drawer" class="drawer">
+  <a href="#" id="closeMenu">close Chiudi</a>
+  <a href="#nuovo">➕ Nuovo movimento</a>
+  <a href="#movimenti">📜 Lista movimenti</a>
+  <a href="#riepilogo">📊 Riepilogo</a>
+  <a href="#fornitori">⚙️ Fornitori</a>
+  <a href="#" id="btnExport">⬇️ Esporta CSV</a>
+  <a href="#" id="btnClear">🗑️ Svuota dati</a>
+</nav>
+
+<main>
+  <!-- Panoramica + Grafico -->
+  <section class="card" id="home">
+    <h2>Panoramica</h2>
+    <p class="money">Saldo: €<span id="saldo">0</span></p>
+    <p class="muted">Saldo netto aggiornato</p>
+    <canvas id="chart" height="120"></canvas>
+  </section>
+
+  <!-- Riepilogo -->
+  <section id="riepilogo" class="card">
+    <h2>Riepilogo</h2>
+    <div class="kpi-grid">
+      <div class="kpi"><h3>Entrate</h3><div class="money ok" id="kEntrate">€0</div></div>
+      <div class="kpi"><h3>Uscite</h3><div class="money bad" id="kUscite">€0</div></div>
+      <div class="kpi"><h3>Δ Entrate − Uscite</h3><div class="money" id="kSaldo">€0</div></div>
+      <div class="kpi"><h3>IVA Debito</h3><div class="money" id="kDebito">€0</div></div>
+      <div class="kpi"><h3>IVA Credito</h3><div class="money" id="kCredito">€0</div></div>
+      <div class="kpi"><h3>Δ IVA (Debito − Credito)</h3><div class="money" id="kDiffIVA">€0</div></div>
+    </div>
+    <p id="ivaReminder" class="muted" style="margin-top:8px;"></p>
+  </section>
+
+  <!-- Azioni rapide -->
+  <section class="card">
+    <h2>Azioni Rapide</h2>
+    <div class="quick-actions">
+      <a href="#nuovo"><span>add</span>Nuovo</a>
+      <a href="#movimenti"><span>list</span>Movimenti</a>
+      <a href="#riepilogo"><span>insights</span>Riepilogo</a>
+    </div>
+  </section>
+
+  <!-- Nuovo movimento -->
+  <section id="nuovo" class="card">
+    <h2>Nuovo Movimento</h2>
+    <form id="movForm">
+      <label>Data <input type="date" name="data" required></label>
+      <label>Tipo
+        <select name="tipo">
+          <option value="entrata">Entrata</option>
+          <option value="uscita">Uscita</option>
+        </select>
+      </label>
+      <label>Metodo
+        <select name="metodo">
+          <option value="Contanti">Contanti</option>
+          <option value="Bancomat">Bancomat</option>
+          <option value="Carta">Carta</option>
+          <option value="Bonifico">Bonifico</option>
+        </select>
+      </label>
+      <label>Categoria
+        <select name="categoria">
+          <option value="Vendita prodotti">Vendita prodotti</option>
+          <option value="Servizi">Servizi</option>
+          <option value="Affitti">Affitti</option>
+          <option value="Utenze">Utenze</option>
+          <option value="Marketing">Marketing</option>
+          <option value="Spesa">Spesa</option>
+          <option value="Altro">Altro</option>
+        </select>
+      </label>
+      <label>Fornitore
+        <select name="fornitore" id="fornitoreSelect"><option value="">-- Nessuno --</option></select>
+      </label>
+      <label>Descrizione <input type="text" name="descrizione"></label>
+      <label>Imponibile (€) <input type="number" name="imponibile" step="0.01" required></label>
+      <label>IVA %
+        <select name="ivaPercent">
+          <option value="0">0 %</option>
+          <option value="4">4 %</option>
+          <option value="5">5 %</option>
+          <option value="10">10 %</option>
+          <option value="22" selected>22 %</option>
+        </select>
+      </label>
+      <button type="submit">Aggiungi</button>
+    </form>
+  </section>
+
+  <!-- Movimenti + Filtri -->
+  <section id="movimenti" class="card">
+    <h2>Movimenti</h2>
+    <div style="display:grid;gap:8px;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));margin-bottom:12px;">
+      <div>
+        <label style="margin:0 0 6px;display:block;">Tipo</label>
+        <div style="display:flex;gap:8px;">
+          <button class="filtro" data-filtro="tutti" style="flex:1">Tutti</button>
+          <button class="filtro" data-filtro="entrata" style="flex:1">Entrate</button>
+          <button class="filtro" data-filtro="uscita" style="flex:1">Uscite</button>
+        </div>
+      </div>
+      <div>
+        <label>Fornitore</label>
+        <select id="filtroFornitore"><option value="">Tutti</option></select>
+      </div>
+      <div>
+        <label>Metodo</label>
+        <select id="filtroMetodo">
+          <option value="">Tutti</option>
+          <option value="Contanti">Contanti</option>
+          <option value="Bancomat">Bancomat</option>
+          <option value="Carta">Carta</option>
+          <option value="Bonifico">Bonifico</option>
+        </select>
+      </div>
+      <div>
+        <label>Categoria</label>
+        <select id="filtroCategoria">
+          <option value="">Tutte</option>
+          <option value="Vendita prodotti">Vendita prodotti</option>
+          <option value="Servizi">Servizi</option>
+          <option value="Affitti">Affitti</option>
+          <option value="Utenze">Utenze</option>
+          <option value="Marketing">Marketing</option>
+          <option value="Spesa">Spesa</option>
+          <option value="Altro">Altro</option>
+        </select>
+      </div>
+    </div>
+    <table id="tabMov">
+      <thead>
+        <tr>
+          <th>Data</th><th>Tipo</th><th>Metodo</th><th>Categoria</th>
+          <th>Fornitore</th><th>Descrizione</th><th>Totale</th><th>Azioni</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </section>
+
+  <!-- Fornitori -->
+  <section id="fornitori" class="card">
+    <h2>Fornitori</h2>
+    <form id="fornForm">
+      <label>Nome Fornitore <input type="text" name="nome" required></label>
+      <button type="submit">Aggiungi</button>
+    </form>
+    <table id="tabForn">
+      <thead><tr><th>Fornitore</th><th>Azioni</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </section>
+</main>
+
+<nav class="bottom-nav">
+  <a href="#home" class="active"><span class="material-symbols-outlined">home</span>Home</a>
+  <a href="#movimenti"><span class="material-symbols-outlined">list</span>Mov</a>
+  <a href="#nuovo"><span class="material-symbols-outlined">add</span>Nuovo</a>
+  <a href="#fornitori"><span class="material-symbols-outlined">settings</span>Set</a>
+</nav>
+
+<script>
+/* ====== Utility & stato ====== */
+const cur = new Intl.NumberFormat('it-IT',{style:'currency',currency:'EUR'});
+const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+const getLS = (k,d=[]) => JSON.parse(localStorage.getItem(k)||JSON.stringify(d));
+const setLS = (k,v) => localStorage.setItem(k,JSON.stringify(v));
+
+let movimenti = getLS('movimenti'), fornitori = getLS('fornitori');
+let filtroCorrente='tutti', filtroFornitore='', filtroMetodo='', filtroCategoria='';
+let chart;
+
+/* ====== Init ====== */
+(function init(){
+  $('#movForm input[name="data"]').valueAsDate=new Date();
+  renderFornitori(); renderFornitoriSelects();
+  bindEvents();
+  // attiva "Tutti" come filtro iniziale
+  $$('.filtro').forEach(b=>{ if(b.dataset.filtro==='tutti') b.classList.add('active'); });
+  renderMovimenti(); refreshSummary();
+})();
+
+/* ====== Eventi ====== */
+function bindEvents(){
+  $('#btnMenu').onclick=()=>$('#drawer').classList.toggle('open');
+  $('#closeMenu').onclick=e=>{e.preventDefault();$('#drawer').classList.remove('open');};
+  $$('#drawer a[href^="#"]').forEach(a=>a.onclick=()=>$('#drawer').classList.remove('open'));
+
+  $('#btnExport').onclick=e=>{e.preventDefault();exportCSV();};
+  $('#btnClear').onclick=e=>{
+    e.preventDefault();
+    if(confirm('Sicuro di voler cancellare tutti i dati?')){
+      movimenti=[]; fornitori=[];
+      saveAll(); renderMovimenti(); refreshSummary(); renderFornitori(); renderFornitoriSelects();
+    }
+  };
+
+  $('#movForm').onsubmit=e=>{e.preventDefault();addMovimento();};
+  $('#fornForm').onsubmit=e=>{e.preventDefault();addFornitore();};
+
+  // Filtri tipo
+  $$('.filtro').forEach(b=>b.onclick=()=>{
+    $$('.filtro').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active');
+    filtroCorrente=b.dataset.filtro;
+    renderMovimenti();
+  });
+
+  // Filtri select
+  $('#filtroFornitore').onchange=e=>{filtroFornitore=e.target.value; renderMovimenti();};
+  $('#filtroMetodo').onchange=e=>{filtroMetodo=e.target.value; renderMovimenti();};
+  $('#filtroCategoria').onchange=e=>{filtroCategoria=e.target.value; renderMovimenti();};
+}
+
+/* ====== Azioni ====== */
+function addMovimento(){
+  const f=new FormData($('#movForm'));
+  const imp=parseFloat(f.get('imponibile'))||0;
+  const iva=(imp*(parseFloat(f.get('ivaPercent'))||0))/100;
+  movimenti.push({
+    id:Date.now(),
+    data:f.get('data'),
+    tipo:f.get('tipo'),
+    metodo:f.get('metodo'),
+    categoria:f.get('categoria'),
+    fornitore:f.get('fornitore'),
+    descrizione:f.get('descrizione'),
+    imponibile:imp,
+    iva:iva
+  });
+  saveAll();
+  $('#movForm').reset();
+  $('#movForm input[name="data"]').valueAsDate=new Date();
+  renderMovimenti(); refreshSummary();
+}
+
+function addFornitore(){
+  const nome=$('#fornForm input[name="nome"]').value.trim();
+  if(!nome) return;
+  fornitori.push({id:Date.now(),nome});
+  saveAll(); $('#fornForm').reset();
+  renderFornitori(); renderFornitoriSelects();
+}
+
+/* ====== Render Fornitori ====== */
+function renderFornitori(){
+  const tbody=$('#tabForn tbody'); tbody.innerHTML='';
+  fornitori.forEach(f=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td>${f.nome}</td><td><button data-del="${f.id}">🗑️</button></td>`;
+    tbody.appendChild(tr);
+  });
+  tbody.querySelectorAll('button').forEach(b=>b.onclick=()=>{
+    fornitori=fornitori.filter(x=>x.id!=b.dataset.del); saveAll();
+    renderFornitori(); renderFornitoriSelects();
+  });
+}
+
+function renderFornitoriSelects(){
+  const s=$('#fornitoreSelect'), f=$('#filtroFornitore');
+  s.innerHTML='<option value="">-- Nessuno --</option>';
+  f.innerHTML='<option value="">Tutti</option>';
+  fornitori.forEach(o=>{
+    s.innerHTML+=`<option>${o.nome}</option>`;
+    f.innerHTML+=`<option>${o.nome}</option>`;
+  });
+}
+
+/* ====== Render Movimenti con filtri ====== */
+function renderMovimenti(){
+  const tb=$('#tabMov tbody'); tb.innerHTML='';
+
+  movimenti
+    .filter(m=>{
+      if(filtroCorrente!=='tutti' && m.tipo!==filtroCorrente) return false;
+      if(filtroFornitore && m.fornitore!==filtroFornitore) return false;
+      if(filtroMetodo && m.metodo!==filtroMetodo) return false;
+      if(filtroCategoria && m.categoria!==filtroCategoria) return false;
+      return true;
+    })
+    .sort((a,b)=>b.data.localeCompare(a.data))
+    .forEach(m=>{
+      const tot=m.imponibile+m.iva;
+      const tr=document.createElement('tr');
+      tr.innerHTML=
+        `<td>${m.data}</td>
+         <td>${m.tipo}</td>
+         <td>${m.metodo||''}</td>
+         <td>${m.categoria||''}</td>
+         <td>${m.fornitore||''}</td>
+         <td>${m.descrizione||''}</td>
+         <td>${cur.format(tot)}</td>
+         <td><button data-del="${m.id}">🗑️</button></td>`;
+      tb.appendChild(tr);
+    });
+
+  tb.querySelectorAll('button').forEach(b=>b.onclick=()=>{
+    movimenti=movimenti.filter(x=>x.id!=b.dataset.del); saveAll();
+    renderMovimenti(); refreshSummary();
+  });
+}
+
+/* ====== Riepilogo + Scadenza IVA ====== */
+function refreshSummary(){
+  let entr=0,usc=0,deb=0,cred=0;
+  movimenti.forEach(m=>{
+    const tot=m.imponibile+m.iva;
+    if(m.tipo==='entrata'){entr+=tot;deb+=m.iva;}
+    else {usc+=tot;cred+=m.iva;}
+  });
+  const saldo = entr - usc;
+  const diffIva = deb - cred;
+
+  $('#saldo').textContent = saldo.toFixed(2);
+  $('#kEntrate').textContent = cur.format(entr);
+  $('#kUscite').textContent = cur.format(usc);
+  $('#kSaldo').textContent  = cur.format(saldo);
+  $('#kDebito').textContent = cur.format(deb);
+  $('#kCredito').textContent= cur.format(cred);
+  $('#kDiffIVA').textContent= cur.format(diffIva);
+
+  ivaReminder();
+  updateChart();
+}
+
+function ivaReminder(){
+  // Scadenze fine trimestre (31/03, 30/06, 30/09, 31/12) — personalizzabili
+  const now=new Date();
+  const quarters=[[3,31],[6,30],[9,30],[12,31]];
+  let next=new Date(now.getFullYear(),quarters[0][0],quarters[0][1]);
+  for(const [m,d] of quarters){
+    const dt=new Date(now.getFullYear(),m,d);
+    if(dt>now){next=dt;break;}
+  }
+  const diff=Math.ceil((next-now)/(1000*60*60*24));
+  $('#ivaReminder').textContent=`Prossima scadenza IVA: ${next.toLocaleDateString()} (mancano ${diff} giorni)`;
+}
+
+/* ====== Grafico Entrate/Uscite mensili ====== */
+function updateChart(){
+  const byMonth = {};
+  movimenti.forEach(m=>{
+    if(!m.data) return;
+    const [y,mo] = m.data.split('-'); // yyyy-mm-dd
+    if(!y||!mo) return;
+    const key = `${y}-${mo}`;
+    if(!byMonth[key]) byMonth[key] = {entrate:0, uscite:0};
+    const tot = (m.imponibile||0) + (m.iva||0);
+    if(m.tipo==='entrata') byMonth[key].entrate += tot;
+    else byMonth[key].uscite += tot;
+  });
+
+  const labels = Object.keys(byMonth).sort();
+  const entrate = labels.map(k => byMonth[k].entrate);
+  const uscite  = labels.map(k => byMonth[k].uscite);
+
+  const ctx = document.getElementById('chart').getContext('2d');
+  if (window.chartInstance) window.chartInstance.destroy();
+
+  window.chartInstance = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        {label:'Entrate',data:entrate,backgroundColor:'rgba(76,175,80,0.7)'},
+        {label:'Uscite',data:uscite,backgroundColor:'rgba(244,67,54,0.7)'}
+      ]
+    },
+    options: {
+      responsive:true,
+      plugins:{legend:{labels:{color:'#e2e2e2'}}, tooltip:{mode:'index',intersect:false}},
+      scales:{
+        x:{ticks:{color:'#e2e2e2'},grid:{color:'rgba(255,255,255,0.1)'}},
+        y:{ticks:{color:'#e2e2e2'},grid:{color:'rgba(255,255,255,0.1)'}}
+      }
+    }
+  });
+}
+
+/* ====== Export/Save ====== */
+function exportCSV(){
+  const rows=[["Data","Tipo","Metodo","Categoria","Fornitore","Descrizione","Imponibile","IVA","Totale"]];
+  movimenti.forEach(m=>{
+    const tot=((m.imponibile||0)+(m.iva||0)).toFixed(2);
+    rows.push([
+      m.data, m.tipo, m.metodo||'', m.categoria||'', m.fornitore||'',
+      (m.descrizione||'').replace(/;/g,','), (m.imponibile||0).toFixed(2), (m.iva||0).toFixed(2), tot
+    ]);
+  });
+  const csv=rows.map(r=>r.join(";")).join("\n");
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='movimenti.csv';
+  document.body.appendChild(a); a.click(); a.remove();
+}
+function saveAll(){ setLS('movimenti',movimenti); setLS('fornitori',fornitori); }
+</script>
+</body>
+</html>
